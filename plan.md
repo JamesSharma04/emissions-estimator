@@ -1,16 +1,16 @@
 # Plan
 
-* PROJECT TITLE
-* YOUR NAME
-* STUDENT ID
-* SUPERVISOR NAME
+* Developing an Estimator for the Environmental Footprint of Big Data Jobs 
+* James Sharma
+* 2469702s
+* Supervised by Lauritz Thamsen
 
 Week-by-week plan for the whole project. Update this as you go along.
 
 ## Winter semester
 
-* **Week 1**
-* **Week 2**
+* **Week 1** Project allocations not released until halfway through week 2
+* **Week 2** Initial Reading
 * **Week 3**
 * **Week 4**
 * **Week 5**
