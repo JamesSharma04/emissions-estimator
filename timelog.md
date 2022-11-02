@@ -100,3 +100,17 @@
 * *0.5 hours* updating timesheet and sending email
 
 * *0.5 hours* meeting with supervisor
+
+## 1 November
+
+* *1.5 hours* looking into Cloud Carbon Footprint methodology and appendicies 
+
+* *2 hours* creading CSV containing cpu average of all multinode data
+
+# 2 November
+
+* *2 hours* data analysis to determine effect of scale out behaviour on utilisation metric
+
+* *1 hour* attempted to fit power curves for each instance type 
+
+* *0.5 hours* meeting with supervisor 
