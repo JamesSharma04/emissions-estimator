@@ -114,3 +114,19 @@
 * *1 hour* attempted to fit power curves for each instance type 
 
 * *0.5 hours* meeting with supervisor 
+
+# 8 November
+
+* *1 hour* looked more closely at power curve statistical metrics 
+
+* *2 hours* read MSci Dissertation on estimating carbon
+
+* *1 hour* looked at MSci Dissertation GitHub spreadsheet and notebook
+
+# 9 November
+
+* *2 hours* applied power curves for utilisation metric to compute estimated power
+
+* *1 hour* used estimated power to compute estimated carbon emissions 
+
+* *0.5 hours* meeting with supervisor 
