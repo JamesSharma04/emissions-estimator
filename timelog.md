@@ -130,3 +130,19 @@
 * *1 hour* used estimated power to compute estimated carbon emissions 
 
 * *0.5 hours* meeting with supervisor 
+
+# 15 November
+
+* *2 hours* looked into similar cloud carbon footprint estimators for design ideas
+
+# 16 November 
+
+* *1 hour* Setting up streamlit infrastructure 
+
+* *1.5 hours* Calculator settings frontend design
+
+* *1 hour* Calculate button functionality 
+
+* *0.5 hour* Loading in data and plotting chart for analysis page
+
+* *1 hour* restructured file input and default input, using session state 
