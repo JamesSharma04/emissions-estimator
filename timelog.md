@@ -79,7 +79,7 @@
 
 ## Week 6
 
-## 24 October
+### 24 October
 
 * *0.5 hours* pulled and pushed scout and teads data
 
@@ -93,7 +93,7 @@
 
 * *0.5 hours* tidied up repository structure, commented and formatted code
 
-## 26 October
+### 26 October
 
 * *1 hour* looked into power curve fitting 
 
@@ -101,13 +101,15 @@
 
 * *0.5 hours* meeting with supervisor
 
-## 1 November
+## Week 7
+
+### 1 November
 
 * *1.5 hours* looking into Cloud Carbon Footprint methodology and appendicies 
 
 * *2 hours* creading CSV containing cpu average of all multinode data
 
-# 2 November
+### 2 November
 
 * *2 hours* data analysis to determine effect of scale out behaviour on utilisation metric
 
@@ -115,7 +117,9 @@
 
 * *0.5 hours* meeting with supervisor 
 
-# 8 November
+## Week 8
+
+### 8 November
 
 * *1 hour* looked more closely at power curve statistical metrics 
 
@@ -123,7 +127,7 @@
 
 * *1 hour* looked at MSci Dissertation GitHub spreadsheet and notebook
 
-# 9 November
+### 9 November
 
 * *2 hours* applied power curves for utilisation metric to compute estimated power
 
@@ -131,11 +135,13 @@
 
 * *0.5 hours* meeting with supervisor 
 
-# 15 November
+## Week 9 
+
+### 15 November
 
 * *2 hours* looked into similar cloud carbon footprint estimators for design ideas
 
-# 16 November 
+### 16 November 
 
 * *1 hour* Setting up streamlit infrastructure 
 
@@ -143,6 +149,120 @@
 
 * *1 hour* Calculate button functionality 
 
-* *0.5 hour* Loading in data and plotting chart for analysis page
+* *0.5 hours* Loading in data and plotting chart for analysis page
 
 * *1 hour* restructured file input and default input, using session state 
+
+* *0.5 hours* meeting with supervisor
+
+## Week 10
+
+### 21 November
+
+* *3 hours* applied feedback as suggested in previous meeting 
+
+### 23 November
+
+* *4 hours* implemented simple prototype calculating and fitting scale out based on linear interpolation
+
+* *0.5 hours* meeting with supervisor
+
+## Week 11
+
+* *No work done due to several overlapping coursework deadlines*
+
+## Week 12
+
+### 28 November
+
+* *0.5 hours* reread bell paper
+
+* *2 hours* thoroughly read C30 paper
+
+
+### 30 November
+
+* *1 hour* looked into project summary status report
+
+* *0.5 hours* looked into gradient boosting classification
+
+* *2 hours* looked into gradient boosting regression
+
+* *1 hour* attempted to implement GBR, unsuccessful
+
+* *0.5 hours* meeting with supervisor 
+
+## Week 13
+
+### 5 December
+
+* *2 hours* successfully implemented GBR for node count on scout dataset
+
+* *1 hour* unsuccessfully attempted to implement cross validation to test GBR result 
+
+### Rest of week 13
+
+* *No futher work done due to PSI exam on the 9th 
+
+## Week 14
+
+### 12 December
+
+* *3 hours* read dissertation writing and evaluation guidance slides
+
+
+### 13 December
+
+* *2 hours* read powerpoint on scientific text writing
+
+### 14 December
+
+* *2 hours* wrote up project status report 
+
+* *3 hours* wrote up draft abstract and started introduction
+
+## Week 15 
+
+### 21 December
+
+* *3 hours* finished state-of-the-art and approach section in draft introduction
+
+* *2 hours* attempted cross validation using different library, unsuccessful
+
+### 22 December
+
+* *1 hour* finishing touches on draft introduction
+
+* *0.5 hours* project meeting with supervisor 
+
+### Rest of week 15
+
+* *No futher work done due to Christmas Break
+
+## Week 16
+
+* *No work done due to New Year Break
+
+## Week 17
+
+### 3 January
+
+* *1 hour* refamiliarised self with project 
+
+* *1 hour* updated timesheets according to meeting notes
+
+* *0.5 hours* updated project status report based on feedback
+
+### 4 January
+
+* *0.5 hours* improved documentation of existing notebook files
+
+* *3 hours* created working script modelling runtime and cpu utilisation given available features
+
+### 5 January
+
+* *2 hours* script now produces csv containing predictions and recovered feature labels 
+
+* *2 hours* calculator options now dynamically generate
+
+* *3 hours* implementing script into existing streamlit webapp
