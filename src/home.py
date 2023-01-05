@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd 
 from scipy import stats
 import matplotlib.pyplot as plt
+from sklearn.ensemble import GradientBoostingRegressor
+import numpy as np 
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import GradientBoostingRegressor
+from collections import defaultdict
+from sklearn import preprocessing
+from sklearn.metrics import mean_squared_error
+from sklearn.inspection import permutation_importance
+from sklearn import preprocessing
 
 plt.style.use('dark_background')
 
@@ -66,7 +75,11 @@ if upload_power_curves is None:
 chosen_power_file = 'Teads' if not upload_runs else upload_power_curves.name
 st.sidebar.info(f"Using data from {chosen_power_file}")
 
-
+def format_string(string: str) -> str:
+    # Replace underscores and dashes with spaces and capitalise first letters
+    string = string.replace("_", " ").replace("-", " ")
+    formatted_string = string.title()
+    return formatted_string
 
 
 
@@ -75,55 +88,29 @@ locations=['United Kingdom','Germany','France']
 
 df = st.session_state['df']
 
+# set up calculator objects
+features = list(df.columns)
+#  might it be useful to sometimes estimate emissions based on these? could make user configurable?
+features_to_remove=['avgcpu','elapsed_time','name']
+for f in features_to_remove:
+    features.remove(f)
 
-jobs=df["workload"].unique()
-instancetypes=df["cluster_type"].unique()
-nodecounts=df["node_count"].unique()
-aaa = nodecounts.sort()
+feature_input=[None]*(len(features))
+for ind,val in enumerate(features):
+    if df[val].dtype == 'int64':
+        # could add help thing showing range in data? 
+        feature_input[ind] = st.number_input(label=format_string(features[ind]), min_value=2, step=1)
+    elif df[val].dtype == 'float64':
+        feature_input[ind] = st.number_input(label=format_string(features[ind]), min_value=0)
+    elif df[val].dtype == 'object':
+        possible_vals=df[val].unique()
+        if len(possible_vals)<10:
+            feature_input[ind] = st.radio(label=format_string(features[ind]),options=possible_vals,horizontal=True)
+        else:
+            feature_input[ind] = st.selectbox(label=format_string(features[ind]),options=possible_vals)
+feature_inputdf=pd.DataFrame(columns=features, data = [feature_input])
 
-def node_interpolation(df,nodecounts,jobs):
-    dfs = []
-    x = nodecounts
-    for j in jobs:
-        filter_ = df['workload']==j
-        y = df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
-        dfs.append(pd.DataFrame(data={'workload':[j],'slope':[slope],'intercept':[intercept],'error':[std_err],'r_value':[r_value],'p_value':[p_value],},index=[j]))
-    all=pd.concat(dfs)
-    return all 
-
-def get_power(power_df,df):
-    power_df.set_index("cluster_type")
-    dfs = []
-    for index, row in df.iterrows():
-        avgutil=row['avgcpu']
-        instance=row['cluster_type']
-        #print(row['cluster_type'],row['avgcpu'])
-        hourpower=power_df.loc[instance,'slope']* avgutil + power_df.loc[instance,'intercept']
-        powerused=(hourpower/3600)*row['elapsed_time']
-        df = pd.DataFrame(data={'cluster_type' : row['name'],'power':powerused}, index=['cluster_type'])
-        dfs.append(df)
-    all=pd.concat(dfs)
-    return all 
-
-def get_carbon(power_results):
-    dfs=[]
-    for index, row in power_results.iterrows():
-        power=row['power']
-        instance=row['cluster_type']
-        pue_power =power*PUE
-        carbon=(pue_power*CARBON_INTENSITY)/1000
-        df = pd.DataFrame(data={'cluster_type' : instance,'carbon':carbon}, index=['cluster_type'])
-        dfs.append(df)
-    all=pd.concat(dfs)
-    
-all=node_interpolation(df,nodecounts,jobs)
-st.write(all)
-
-#possibly convert into dict 
-nodes=st.slider("Node Count", min_value=2,max_value=100)
-instance=st.radio("Instance Type",instancetypes,horizontal=True)
-taskload=st.radio("Job",jobs,horizontal=True)
+st.text("")
 location=st.radio("Location",locations,horizontal=True)
 
 with st.expander("Override preset data"):
@@ -135,6 +122,150 @@ with st.expander("Override preset data"):
         # try to interpolate between scaleouts assuming sparse dataset 
 
 scope3=st.checkbox("Include Scope 3 Emissions")
+
+def train_gbr(df,feature_inputdf):
+    #save cluster type to use later
+    cluster_type = feature_inputdf["cluster_type"]
+    #encode feature labels
+    cat_cols_f = feature_inputdf.select_dtypes(include='object').columns
+    d_f = defaultdict(preprocessing.LabelEncoder)
+    feature_inputdf[cat_cols_f] = feature_inputdf[cat_cols_f].apply(lambda x: d_f[x.name].fit_transform(x.astype(str)))
+    print(feature_inputdf)
+    # labels
+    y1 = df.pop('avgcpu')
+    y2 = df.pop('elapsed_time')
+    # drop runtime/util if not already - not sure if this is correct?
+    #df.drop(columns=['avgcpu','elapsed_time'], inplace=True, errors='ignore')
+    # feature vector
+    name = df.pop("name")
+    X = df
+    unencoded_X=X.copy()
+    # get columns containing text, apply label encoder and transform text to numbers
+    cat_cols = X.select_dtypes(include='object').columns
+    d = defaultdict(preprocessing.LabelEncoder)
+    X[cat_cols] = X[cat_cols].apply(lambda x: d[x.name].fit_transform(x.astype(str)))
+
+    # split dataset
+    #X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.1, random_state=0)
+
+    # set regression model parameters to tweak later and see how results change
+    params = {
+        "n_estimators":500,
+        "max_depth": 4,
+        "min_samples_split": 5,
+        "learning_rate": 0.01,
+        "loss": "squared_error",
+    }
+
+    reg1 = GradientBoostingRegressor(**params)
+    reg2 = GradientBoostingRegressor(**params)
+    reg1.fit(X, y1)
+    reg2.fit(X, y2)
+
+    # attempt to make df of resultant data
+    y1_pred = reg1.predict(feature_inputdf)
+    y2_pred = reg2.predict(feature_inputdf)
+    return (y1_pred,y2_pred,cluster_type)
+
+def get_power(power_df,e_util,e_time,cluster_type):
+    #power_df.set_index("cluster_type")
+    instance=cluster_type.values[0]
+    hourpower=power_df.loc[power_df['cluster_type']==instance,'slope']* e_util + power_df.loc[power_df['cluster_type']==instance,'intercept']
+    powerused=(hourpower/3600)*e_time
+    return powerused
+
+def get_carbon(powerused):
+    power=powerused
+    pue_power =power*PUE
+    carbon=(pue_power*CARBON_INTENSITY)/1000
+    return carbon
+
+run_prediction=st.button("Estimate Emissions")
+
+if run_prediction:
+    try:
+        e_util, e_time, cluster_type = train_gbr(df,feature_inputdf)
+        # placeholder
+        max_power = 100
+        power_result = get_power(power_df,e_util,e_time,cluster_type)
+        # call some functions to calculate result 
+        carbon_result = get_carbon(power_result).values[0]
+
+        # use Teads data to make a DF with this info and look up from there
+        scope3val=5
+        scopeexp=f", including {scope3val}g/CO2/kWh scope 3 emissions." if scope3 else "."
+
+        st.success(f"Carbon Footprint Result is: {round(carbon_result,2)} gCO2eq.")
+        st.info(f"Calculation: {max_power} watt instance at {round(e_util[0])}% load for {round(e_time[0])} seconds, multiplied by {PUE} PUE and {CARBON_INTENSITY}g/CO2/kWh{scopeexp}")
+
+    except Exception as e:
+        st.exception(f"Failed. Error {e}")
+
+
+jobs=df["workload"].unique()
+instancetypes=df["cluster_type"].unique()
+nodecounts=df["node_count"].unique()
+aaa = nodecounts.sort()
+
+def scale_out_fit_linregress(df,nodecounts,jobs):
+    dfs = []
+    x = nodecounts
+    for j in jobs:
+        filter_ = df['workload']==j
+        y = df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True)
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+        dfs.append(pd.DataFrame(data={'workload':[j],'slope':[slope],'intercept':[intercept],'error':[std_err],'r_value':[r_value],'p_value':[p_value],},index=[j]))
+    all=pd.concat(dfs)
+    return all 
+
+def scale_out_fit_gradboost(df,nodecounts,jobs):
+    dfs = []
+    x=sorted(nodecounts)
+    oneDx = np.array(x)
+    x=oneDx.reshape(-1, 1)
+    for j in jobs:
+        filter_ = df['workload']==j
+        y = (df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True))
+        gbr = GradientBoostingRegressor()
+        gbr.fit(x, y)
+        #predvals = np.arange(min(x),max(x)+1).reshape(-1,1)
+        y_pred=gbr.predict(x)
+        jarray=[j for i in range(len(y_pred))]
+        dfs.append(pd.DataFrame(data={'noof_nodes':oneDx, 'predicted_util':y_pred},index=jarray))
+    all=pd.concat(dfs)
+    return all 
+
+def get_gradboost_models(df,nodecounts,jobs):
+    dfs = []
+    x=sorted(nodecounts)
+    oneDx = np.array(x)
+    x=oneDx.reshape(-1, 1)
+    for j in jobs:
+        filter_ = df['workload']==j
+        y = (df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True))
+        gbr = GradientBoostingRegressor()
+        gbr.fit(x, y)
+        dfs.append(pd.DataFrame(data={'workload':j, 'model':gbr},index=j))
+    all=pd.concat(dfs)
+    return all 
+    
+#linregressresult=scale_out_fit_linregress(df,nodecounts,jobs)
+#st.write(linregressresult)
+#gradboostresult = scale_out_fit_gradboost(df,nodecounts,jobs)
+#st.write(gradboostresult)
+
+def plot_linregress(linregressresult):
+
+    plt.scatter(x, y)
+    plt.show()
+
+
+
+#possibly convert into dict 
+nodes=st.slider("Node Count", min_value=2,max_value=100)
+instance=st.radio("Instance Type",instancetypes,horizontal=True)
+taskload=st.radio("Job",jobs,horizontal=True)
+# indicate difference between earlier info which is based on user input and location which is always present 
 
 run=st.button("Calculate")
 recommendation=st.button("Show Recommendation")
@@ -191,7 +322,7 @@ def plot_avg_util_by_workload(df):
     plt.ylabel("Utilisation (%)")
     st.write(fig)
 
-plot_avg_util_by_noof_nodes(df)
+#plot_avg_util_by_noof_nodes(df)
 
 st.markdown("# Methodology")
 
