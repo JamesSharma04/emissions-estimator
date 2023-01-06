@@ -265,4 +265,8 @@
 
 * *2 hours* calculator options now dynamically generate
 
-* *3 hours* implementing script into existing streamlit webapp
+* *3 hours* implemented script into existing streamlit webapp
+
+### 6 January
+
+* *1 hour* tidied up streamlit file

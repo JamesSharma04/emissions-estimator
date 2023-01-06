@@ -82,11 +82,9 @@ def format_string(string: str) -> str:
     return formatted_string
 
 
-
-
-locations=['United Kingdom','Germany','France']
-
 df = st.session_state['df']
+
+original_df = df.copy()
 
 # set up calculator objects
 features = list(df.columns)
@@ -110,7 +108,11 @@ for ind,val in enumerate(features):
             feature_input[ind] = st.selectbox(label=format_string(features[ind]),options=possible_vals)
 feature_inputdf=pd.DataFrame(columns=features, data = [feature_input])
 
+# show semantic split between user inputted calculator data and other presets
 st.text("")
+
+locations=['United Kingdom','Germany','France']
+
 location=st.radio("Location",locations,horizontal=True)
 
 with st.expander("Override preset data"):
@@ -118,8 +120,6 @@ with st.expander("Override preset data"):
     PUE = st.number_input("Power Usage Effectiveness of Data Center",min_value=1.0,value=1.135, help="Minumum value of 1")
     CARBON_INTENSITY = st.number_input("Grid Carbon Intensity (g/CO2/kWh)",value=228,min_value=0)
     AVG_UTIL = st.number_input("Use Constant CPU Utilisation Level",value=0.5,min_value=0.0)
-        # incl rest of data processing
-        # try to interpolate between scaleouts assuming sparse dataset 
 
 scope3=st.checkbox("Include Scope 3 Emissions")
 
@@ -181,11 +181,12 @@ def get_carbon(powerused):
     return carbon
 
 run_prediction=st.button("Estimate Emissions")
+recommendation=st.button("Recommend Optimal Scale-out")
 
 if run_prediction:
     try:
         e_util, e_time, cluster_type = train_gbr(df,feature_inputdf)
-        # placeholder
+        # placeholder, will get from teads dataset 
         max_power = 100
         power_result = get_power(power_df,e_util,e_time,cluster_type)
         # call some functions to calculate result 
@@ -200,105 +201,12 @@ if run_prediction:
 
     except Exception as e:
         st.exception(f"Failed. Error {e}")
-
-
-jobs=df["workload"].unique()
-instancetypes=df["cluster_type"].unique()
-nodecounts=df["node_count"].unique()
-aaa = nodecounts.sort()
-
-def scale_out_fit_linregress(df,nodecounts,jobs):
-    dfs = []
-    x = nodecounts
-    for j in jobs:
-        filter_ = df['workload']==j
-        y = df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
-        dfs.append(pd.DataFrame(data={'workload':[j],'slope':[slope],'intercept':[intercept],'error':[std_err],'r_value':[r_value],'p_value':[p_value],},index=[j]))
-    all=pd.concat(dfs)
-    return all 
-
-def scale_out_fit_gradboost(df,nodecounts,jobs):
-    dfs = []
-    x=sorted(nodecounts)
-    oneDx = np.array(x)
-    x=oneDx.reshape(-1, 1)
-    for j in jobs:
-        filter_ = df['workload']==j
-        y = (df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True))
-        gbr = GradientBoostingRegressor()
-        gbr.fit(x, y)
-        #predvals = np.arange(min(x),max(x)+1).reshape(-1,1)
-        y_pred=gbr.predict(x)
-        jarray=[j for i in range(len(y_pred))]
-        dfs.append(pd.DataFrame(data={'noof_nodes':oneDx, 'predicted_util':y_pred},index=jarray))
-    all=pd.concat(dfs)
-    return all 
-
-def get_gradboost_models(df,nodecounts,jobs):
-    dfs = []
-    x=sorted(nodecounts)
-    oneDx = np.array(x)
-    x=oneDx.reshape(-1, 1)
-    for j in jobs:
-        filter_ = df['workload']==j
-        y = (df[filter_].groupby(['node_count'])['avgcpu'].mean(numeric_only=True))
-        gbr = GradientBoostingRegressor()
-        gbr.fit(x, y)
-        dfs.append(pd.DataFrame(data={'workload':j, 'model':gbr},index=j))
-    all=pd.concat(dfs)
-    return all 
-    
-#linregressresult=scale_out_fit_linregress(df,nodecounts,jobs)
-#st.write(linregressresult)
-#gradboostresult = scale_out_fit_gradboost(df,nodecounts,jobs)
-#st.write(gradboostresult)
-
-def plot_linregress(linregressresult):
-
-    plt.scatter(x, y)
-    plt.show()
-
-
-
-#possibly convert into dict 
-nodes=st.slider("Node Count", min_value=2,max_value=100)
-instance=st.radio("Instance Type",instancetypes,horizontal=True)
-taskload=st.radio("Job",jobs,horizontal=True)
-# indicate difference between earlier info which is based on user input and location which is always present 
-
-run=st.button("Calculate")
-recommendation=st.button("Show Recommendation")
-
-
-
-if run:
-    try:
-        power = 1000
-        power_result = get_power(power_df, df)
-        # call some functions to calculate result 
-        carbon_result = get_carbon(power_result)
-
-        # compute by looking up carbon_result, using node interpolation/extrapolation if config not there
-        carbon_total=100
-
-        # store this somewhere 
-        avg_load=0.8
-        # use Teads data to make a DF with this info and look up from there
-        scope3val=5
-        scopeexp=f", including {scope3val}g/CO2/kWh scope 3 emissions." if scope3 else "."
-
-        st.success(f"Carbon Footprint Result is: {carbon_total} gCO2eq.")
-        st.info(f"Calculation: {power} watt device at {avg_load*100}% load, multiplied by {PUE} PUE and {CARBON_INTENSITY}g/CO2/kWh{scopeexp}")
-        
-
-    except Exception as e:
-        st.exception(f"Failed. Error {e}")
-
 if recommendation:
+    # placeholder - need to perform optimisation based on models 
     rec_cluster='c4.large'  
     improvement=50
     st.success(f"Your recommended EC2 Cluster is: {rec_cluster}",icon="✔️")
+
 
 
 st.markdown("# Dataset Statistics")
@@ -322,7 +230,7 @@ def plot_avg_util_by_workload(df):
     plt.ylabel("Utilisation (%)")
     st.write(fig)
 
-#plot_avg_util_by_noof_nodes(df)
+plot_avg_util_by_noof_nodes(original_df)
 
 st.markdown("# Methodology")
 
