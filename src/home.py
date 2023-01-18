@@ -12,6 +12,7 @@ from sklearn import preprocessing
 from sklearn.metrics import mean_squared_error
 from sklearn.inspection import permutation_importance
 from sklearn import preprocessing
+import utils
 
 plt.style.use('dark_background')
 
@@ -54,12 +55,18 @@ if upload_runs is not None:
         inputdf = pd.read_csv(upload_runs)
         #compute_avg_cpu_util(inputdf)
         st.session_state['df'] = inputdf
+        original_df = inputdf.copy()
+        with st.spinner("Training model"):
+            util_reg,time_reg = utils.train_gbr(inputdf)
         success_msg()
     except Exception as e:
         st.sidebar.exception(f"Failed. Error {e}")
 if upload_runs is None:
     df = pd.read_csv('../data/processed/scout/average_utils/averages.csv')
     st.session_state['df'] = df
+    original_df = df.copy()
+    with st.spinner("Training model"):
+        util_reg,time_reg = utils.train_gbr(df)
 chosen_file = 'Scout' if not upload_runs else upload_runs.name
 st.session_state['chosen_file'] = chosen_file
 st.sidebar.info(f"Using data from {chosen_file}")
@@ -84,12 +91,12 @@ def format_string(string: str) -> str:
     return formatted_string
 
 
-df = st.session_state['df']
+#df = st.session_state['df']
 
-original_df = df.copy()
 def get_features(df):
     # set up all feature objects
     features = list(df.columns)
+    print(features)
     # remove features we don't want user selection for 
     features_to_remove=['avgcpu','elapsed_time','name']
     for f in features_to_remove:
@@ -133,13 +140,11 @@ def get_features(df):
                 feature_input.append(st.radio(label=format_string(user_features[ind]),options=possible_vals,horizontal=True))
             else:
                 feature_input.append(st.selectbox(label=format_string(user_features[ind]),options=possible_vals))
-    print(feature_input)
-    print(features)
     feature_inputdf=pd.DataFrame(columns=features+user_features, data = [feature_input])
     return feature_inputdf
 
 
-feature_inputdf = get_features(df)
+feature_inputdf = get_features(original_df)
 
 
 # show semantic split between user inputted calculator data and other presets
@@ -157,51 +162,19 @@ with st.expander("Override preset data"):
 
 scope3=st.checkbox("Include Scope 3 Emissions")
 
-def train_gbr(df,feature_inputdf):
+
+def predict_gbr(util_reg,time_reg,feature_inputdf):
     #save cluster type to use later
     instance_type = feature_inputdf["instance_type"]
     #encode feature labels
     cat_cols_f = feature_inputdf.select_dtypes(include='object').columns
     d_f = defaultdict(preprocessing.LabelEncoder)
     feature_inputdf[cat_cols_f] = feature_inputdf[cat_cols_f].apply(lambda x: d_f[x.name].fit_transform(x.astype(str)))
-    # remove features to predict
-    y1 = df.pop('avgcpu')
-    y2 = df.pop('elapsed_time')
-
-    # unnceccessary feature 
-    name = df.pop("name")
-    X = df
-    unencoded_X=X.copy()
-    # get columns containing text, apply label encoder and transform text to numbers
-    cat_cols = X.select_dtypes(include='object').columns
-    d = defaultdict(preprocessing.LabelEncoder)
-    X[cat_cols] = X[cat_cols].apply(lambda x: d[x.name].fit_transform(x.astype(str)))
-
-    # split dataset
-    #X1_train, X1_test, y1_train, y1_test = train_test_split(X,y1,test_size=0.1, random_state=0)
-    #X2_train, X2_test, y2_train, y2_test = train_test_split(X,y2,test_size=0.1, random_state=0)
-
-    # set regression model parameters to tweak later and see how results change
-    param_grid = {
-        "n_estimators":[500,1000],
-        "max_depth": [4,8],
-        "min_samples_split": [2,4],
-        "learning_rate": [0.005, 0.01, 0.05],
-        "loss": ["squared_error"]
-    }
-
-    gbr1 = GradientBoostingRegressor()
-    gbr2 = GradientBoostingRegressor()
-
-    reg1 = GridSearchCV(gbr1, param_grid, cv=2)
-    reg2 = GridSearchCV(gbr2, param_grid, cv=2)
-    reg1.fit(X, y1)
-    reg2.fit(X, y2)
 
     # attempt to make df of resultant data
-    y1_pred = reg1.predict(feature_inputdf)
-    y2_pred = reg2.predict(feature_inputdf)
-    return (y1_pred,y2_pred,instance_type)
+    e_util = util_reg.predict(feature_inputdf)
+    e_time = time_reg.predict(feature_inputdf)
+    return (e_util, e_time, instance_type)
 
 def get_power(power_df,e_util,e_time,instance_type):
     #power_df.set_index("instance_type")
@@ -225,8 +198,9 @@ with col2:
 
 if run_prediction:
     try:
-        with st.spinner("Training model"):
-            e_util, e_time, instance_type = train_gbr(df,feature_inputdf)
+        with st.spinner("Computing Prediction"):
+            e_util, e_time, instance_type = predict_gbr(util_reg,time_reg,feature_inputdf)
+            
         # placeholder, will get from teads dataset 
         max_power = 100
         power_result = get_power(power_df,e_util,e_time,instance_type)
