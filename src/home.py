@@ -180,8 +180,9 @@ def get_power(power_df,e_util,e_time,instance_type):
     #power_df.set_index("instance_type")
     instance=instance_type.values[0]
     hourpower=power_df.loc[power_df['instance_type']==instance,'slope']* e_util + power_df.loc[power_df['instance_type']==instance,'intercept']
+    max_power=power_df.loc[power_df['instance_type']==instance,'max_power'].values[0]
     powerused=(hourpower/3600)*e_time
-    return powerused
+    return (powerused,max_power)
 
 def get_carbon(powerused):
     power=powerused
@@ -202,8 +203,7 @@ if run_prediction:
             e_util, e_time, instance_type = predict_gbr(util_reg,time_reg,feature_inputdf)
             
         # placeholder, will get from teads dataset 
-        max_power = 100
-        power_result = get_power(power_df,e_util,e_time,instance_type)
+        power_result,max_power = get_power(power_df,e_util,e_time,instance_type)
         # call some functions to calculate result 
         carbon_result = get_carbon(power_result).values[0]
 
