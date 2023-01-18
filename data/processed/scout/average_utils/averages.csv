@@ -1,4 +1,4 @@
-avgcpu,node_count,cluster_type,workload,engine_type,data_size,elapsed_time,name
+avgcpu,node_count,instance_type,job_input,engine_type,data_size,elapsed_time,name
 40.52019520697168,10,c4.2xlarge,join,spark,bigdata,305.064,10_c4.2xlarge_join_spark_bigdata_1
 27.19098963346908,10,c4.2xlarge,join,spark,huge,365.106,10_c4.2xlarge_join_spark_huge_1
 87.61257936507937,10,c4.2xlarge,kmeans,spark1.5,bigdata,1891.7524341300013,10_c4.2xlarge_kmeans_spark1.5_bigdata_1
