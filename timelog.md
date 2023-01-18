@@ -270,3 +270,27 @@
 ### 6 January
 
 * *1 hour* tidied up streamlit file
+
+## Semester 2, Week 1
+
+### 11 January
+
+* *0.5 hours* meeting with supervisor 
+
+* *2 hours* applied streamlit calculator interface improvement suggestions
+
+## Semester 2, Week 2
+
+### 17 January
+
+* *2 hours* applied gridsearchCV to notebook script
+
+### 18 January
+
+* *1 hour* implemented gridsearchCV in streamlit app
+
+* *1.5 hours* separated training and predicting of dataset
+
+* *1 hour* attempted to show dataset result as well as prediction, unsuccessful
+
+* *0.5 hours* meeting with supervisor
