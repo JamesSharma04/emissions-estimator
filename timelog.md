@@ -294,3 +294,49 @@
 * *1 hour* attempted to show dataset result as well as prediction, unsuccessful
 
 * *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 3
+
+* *15 hours* Completed streamlit modelling 
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 4
+
+* *15 hours* Completed metric display to user including optimisation
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 5
+
+* *15 hours* Performing Evaluation
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 6
+
+* *15 hours* Finished off Evaluation
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 7
+
+* *20 hours* Started writing dissertation, wrote some introduction and background
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 8
+
+* *30 hours* Wrote up some more of the dissertation 
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 9
+
+* *40 hours* Redrafted dissertation
+
+* *0.5 hours* meeting with supervisor
+
+## Semester 2, Week 10
+
+* *40 hours* Finished off dissertation
