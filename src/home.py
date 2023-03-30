@@ -138,7 +138,7 @@ def get_features(df):
                 feature_input[ind] = st.selectbox(
                     label=format_string(features[ind]), options=possible_vals)
 
-    grid_df = pd.read_csv("../data/raw/grid_carbon.md", sep="|").tail(-1)
+    grid_df = pd.read_csv("src/datasetsgrid_carbon.md", sep="|").tail(-1)
     grid_df.rename(columns=lambda x: x.strip(), inplace=True)
     grid_carbon = pd.DataFrame(data={"Region": grid_df["Region"].str.replace(
         ' ', ''), "CO2": grid_df["CO2e (metric ton/kWh)"].astype(float)*1000000})
