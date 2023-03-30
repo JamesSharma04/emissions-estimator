@@ -54,7 +54,7 @@ if upload_runs is not None:
     except Exception as e:
         st.sidebar.exception(f"Failed. Error {e}")
 if upload_runs is None:
-    df = pd.read_csv('src/averages.csv')
+    df = pd.read_csv('src/datasets/averages.csv')
     st.session_state['df'] = df
     original_df = df.copy()
     with st.spinner("Training model"):
@@ -73,7 +73,7 @@ if upload_power_curves is not None:
     except Exception as e:
         st.sidebar.exception(f'Failed. Error {e}')
 if upload_power_curves is None:
-    power_df = pd.read_csv("../data/processed/teads/instancelines.csv")
+    power_df = pd.read_csv("src/datasets/instancelines.csv")
     st.session_state['power_df'] = power_df
 chosen_power_file = 'Teads' if not upload_power_curves else upload_power_curves.name
 st.sidebar.info(f"Using data from {chosen_power_file}")
@@ -87,7 +87,7 @@ if upload_grid is not None:
     except Exception as e:
         st.sidebar.exception(f'Failed. Error {e}')
 if upload_grid is None:
-    grid_df = pd.read_csv("../data/raw/grid_carbon.md", sep="|").tail(-1)
+    grid_df = pd.read_csv("src/datasets/grid_carbon.md", sep="|").tail(-1)
     grid_df.rename(columns=lambda x: x.strip(), inplace=True)
     grid_carbon = pd.DataFrame(data={"Region": grid_df["Region"].str.replace(
         ' ', ''), "CO2": grid_df["CO2e (metric ton/kWh)"].astype(float)*1000000})
