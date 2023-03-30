@@ -40,7 +40,7 @@ upload_power_curves = st.sidebar.file_uploader(
     "Upload your own Power Curves", help="Must be in same format as teads data")
 upload_grid = st.sidebar.file_uploader(
     "Upload your own Grid Emission Factors", help="Must be in same format as cloudcarbonfootprint data")
-st.write(os.getcwd())
+st.write(os.listdir())
 if upload_runs is not None:
     try:
         inputdf = pd.read_csv(upload_runs)
