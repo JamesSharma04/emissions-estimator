@@ -54,7 +54,7 @@ if upload_runs is not None:
     except Exception as e:
         st.sidebar.exception(f"Failed. Error {e}")
 if upload_runs is None:
-    df = pd.read_csv('../src/averages.csv')
+    df = pd.read_csv('src/averages.csv')
     st.session_state['df'] = df
     original_df = df.copy()
     with st.spinner("Training model"):
