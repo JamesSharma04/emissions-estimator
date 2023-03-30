@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import utils
 import matplotlib.pyplot as plt
-import os
+
 plt.style.use('dark_background')
 
 st.set_page_config(
@@ -40,7 +40,7 @@ upload_power_curves = st.sidebar.file_uploader(
     "Upload your own Power Curves", help="Must be in same format as teads data")
 upload_grid = st.sidebar.file_uploader(
     "Upload your own Grid Emission Factors", help="Must be in same format as cloudcarbonfootprint data")
-st.write(os.listdir())
+
 if upload_runs is not None:
     try:
         inputdf = pd.read_csv(upload_runs)
@@ -54,7 +54,7 @@ if upload_runs is not None:
     except Exception as e:
         st.sidebar.exception(f"Failed. Error {e}")
 if upload_runs is None:
-    df = pd.read_csv('averages.csv')
+    df = pd.read_csv('../src/averages.csv')
     st.session_state['df'] = df
     original_df = df.copy()
     with st.spinner("Training model"):
