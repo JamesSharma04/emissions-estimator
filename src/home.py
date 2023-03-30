@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import utils
 import matplotlib.pyplot as plt
-
+import os
 plt.style.use('dark_background')
 
 st.set_page_config(
@@ -40,7 +40,7 @@ upload_power_curves = st.sidebar.file_uploader(
     "Upload your own Power Curves", help="Must be in same format as teads data")
 upload_grid = st.sidebar.file_uploader(
     "Upload your own Grid Emission Factors", help="Must be in same format as cloudcarbonfootprint data")
-
+st.write(os.getcwd())
 if upload_runs is not None:
     try:
         inputdf = pd.read_csv(upload_runs)
