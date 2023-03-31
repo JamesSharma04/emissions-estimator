@@ -7,7 +7,7 @@ Visit https://emissions-estimator.streamlit.app/ and have a look around!
 ### Install Dependencies
 
 ```
-pip3 -r install requirements.txt
+pip3 -r install src/requirements.txt
 ```
 
 ### Run App
